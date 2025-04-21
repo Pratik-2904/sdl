@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Railway Time Table</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      overflow-x: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      padding: 20px;
+      border-bottom: 2px solid #3498db;
+      margin: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th, td {
+      text-align: center;
+      padding: 14px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #dff9fb;
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      th {
+        position: relative;
+      }
+
+      td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+      }
+
+      td::before {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      td:nth-of-type(1)::before { content: "Train No"; }
+      td:nth-of-type(2)::before { content: "Train Name"; }
+      td:nth-of-type(3)::before { content: "Departure"; }
+      td:nth-of-type(4)::before { content: "Arrival"; }
+      td:nth-of-type(5)::before { content: "From"; }
+      td:nth-of-type(6)::before { content: "To"; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Railway Time Table</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Train No</th>
+        <th>Train Name</th>
+        <th>Departure</th>
+        <th>Arrival</th>
+        <th>From</th>
+        <th>To</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>12001</td>
+        <td>Shatabdi Express</td>
+        <td>06:00</td>
+        <td>12:00</td>
+        <td>Mumbai</td>
+        <td>Pune</td>
+      </tr>
+      <tr>
+        <td>12951</td>
+        <td>Mumbai Rajdhani</td>
+        <td>16:40</td>
+        <td>08:35</td>
+        <td>Mumbai</td>
+        <td>Delhi</td>
+      </tr>
+      <tr>
+        <td>12627</td>
+        <td>Karnataka Express</td>
+        <td>19:20</td>
+        <td>10:30</td>
+        <td>Bangalore</td>
+        <td>Delhi</td>
+      </tr>
+      <tr>
+        <td>12245</td>
+        <td>Duronto Express</td>
+        <td>23:00</td>
+        <td>07:00</td>
+        <td>Pune</td>
+        <td>Howrah</td>
+      </tr>
+      <tr>
+        <td>12301</td>
+        <td>Rajdhani Express</td>
+        <td>17:00</td>
+        <td>09:30</td>
+        <td>Kolkata</td>
+        <td>Delhi</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

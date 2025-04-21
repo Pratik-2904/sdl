@@ -1,9 +1,51 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        
-    </head>
-    <body>
 
-    </body>
+<head>
+    <style>
+        .name{
+            flex-direction: row;
+            display: flex;
+            justify-content: space-between;
+        }
+        .group{
+            height: 10rem;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1> Simple Form</h1>
+    <div class="container">
+        <h2> Facebook Registration</h2>
+        <form class="form" actition="">
+            <div class="name">
+                <div class="group">
+                    <label>First Name</label>
+                    <input type="text" name="fname" placeholder="First Name" required>
+                </div>
+                <div id="fnameerror"></div>
+                <div class="group">
+                    <label for="lname">
+                        Last Name
+                    </label>
+                    <input type="text" name="lname" id="lname" placeholder="last Name" >
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+    <script>
+        function validate(){
+            var fname = document.getElementById(lname)
+
+            if(fname == ""){
+                document.
+            }
+        }
+    </script>
+</body>
+
 </html>
