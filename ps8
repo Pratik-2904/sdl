@@ -1,0 +1,179 @@
+<?php
+// ========================== db.php ==========================
+$conn = new mysqli("localhost", "root", "", "complaint_system");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+<!-- Filename: db.php -->
+
+<?php
+// ========================== register.php ==========================
+include 'db.php';
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["register"])) {
+    $username = $_POST["username"];
+    $email    = $_POST["email"];
+    $password = password_hash($_POST["password"], PASSWORD_DEFAULT);
+
+    $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $username, $email, $password);
+    $stmt->execute();
+    echo "Registered successfully! <a href='login.php'>Login</a>";
+}
+?>
+<h2>Register</h2>
+<form method="post">
+    Username: <input name="username" required><br>
+    Email: <input type="email" name="email" required><br>
+    Password: <input type="password" name="password" required><br>
+    <button type="submit" name="register">Register</button>
+</form>
+<!-- Filename: register.php -->
+
+<?php
+// ========================== login.php ==========================
+session_start();
+include 'db.php';
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["login"])) {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+    $result = $conn->query("SELECT * FROM users WHERE username='$username'");
+    $user = $result->fetch_assoc();
+
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user'] = $user;
+        header("Location: dashboard.php");
+    } else {
+        echo "Invalid credentials!";
+    }
+}
+?>
+<h2>Login</h2>
+<form method="post">
+    Username: <input name="username" required><br>
+    Password: <input type="password" name="password" required><br>
+    <button type="submit" name="login">Login</button>
+</form>
+<!-- Filename: login.php -->
+
+<?php
+// ========================== dashboard.php ==========================
+session_start();
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit();
+}
+echo "Welcome, " . $_SESSION['user']['username'];
+echo "<br><a href='submit_complaint.php'>Submit Complaint</a>";
+echo "<br><a href='view_complaints.php'>View My Complaints</a>";
+if ($_SESSION['user']['role'] == 'admin') {
+    echo "<br><a href='admin_panel.php'>Admin Panel</a>";
+}
+echo "<br><a href='logout.php'>Logout</a>";
+?>
+<!-- Filename: dashboard.php -->
+
+<?php
+// ========================== submit_complaint.php ==========================
+session_start();
+include 'db.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_complaint"])) {
+    $subject = $_POST["subject"];
+    $desc = $_POST["description"];
+    $user_id = $_SESSION['user']['id'];
+
+    $stmt = $conn->prepare("INSERT INTO complaints (user_id, subject, description) VALUES (?, ?, ?)");
+    $stmt->bind_param("iss", $user_id, $subject, $desc);
+    $stmt->execute();
+    echo "Complaint submitted!";
+}
+?>
+<h2>Submit Complaint</h2>
+<form method="post">
+    Subject: <input name="subject" required><br>
+    Description: <textarea name="description" required></textarea><br>
+    <button type="submit" name="submit_complaint">Submit</button>
+</form>
+<!-- Filename: submit_complaint.php -->
+
+<?php
+// ========================== view_complaints.php ==========================
+session_start();
+include 'db.php';
+$user_id = $_SESSION['user']['id'];
+
+$result = $conn->query("SELECT * FROM complaints WHERE user_id=$user_id");
+echo "<h3>My Complaints</h3>";
+while ($row = $result->fetch_assoc()) {
+    echo "<p><b>{$row['subject']}</b> - {$row['status']} <br> {$row['description']}<hr></p>";
+}
+?>
+<!-- Filename: view_complaints.php -->
+
+<?php
+// ========================== admin_panel.php ==========================
+session_start();
+include 'db.php';
+if ($_SESSION['user']['role'] != 'admin') {
+    die("Unauthorized access!");
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update_status"])) {
+    $id = $_POST["id"];
+    $status = $_POST["status"];
+    $conn->query("UPDATE complaints SET status='$status' WHERE id=$id");
+}
+
+$result = $conn->query("SELECT complaints.*, users.username FROM complaints JOIN users ON users.id = complaints.user_id");
+echo "<h3>All Complaints</h3>";
+while ($row = $result->fetch_assoc()) {
+    echo "<form method='post'>
+        <b>{$row['subject']}</b> by {$row['username']}<br>
+        {$row['description']}<br>
+        Status: <select name='status'>
+            <option " . ($row['status'] == 'Pending' ? 'selected' : '') . ">Pending</option>
+            <option " . ($row['status'] == 'In Progress' ? 'selected' : '') . ">In Progress</option>
+            <option " . ($row['status'] == 'Resolved' ? 'selected' : '') . ">Resolved</option>
+        </select>
+        <input type='hidden' name='id' value='{$row['id']}'>
+        <button type='submit' name='update_status'>Update</button><hr>
+    </form>";
+}
+?>
+<!-- Filename: admin_panel.php -->
+
+<?php
+// ========================== logout.php ==========================
+session_start();
+session_destroy();
+header("Location: login.php");
+?>
+<!-- Filename: logout.php -->
+
+<?php
+// ========================== SQL DATABASE (complaint_system.sql) ==========================
+/*
+CREATE DATABASE complaint_system;
+USE complaint_system;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('user', 'admin') DEFAULT 'user'
+);
+
+CREATE TABLE complaints (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    subject VARCHAR(255),
+    description TEXT,
+    status ENUM('Pending', 'In Progress', 'Resolved') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+*/
+?>
+<!-- Filename: complaint_system.sql -->

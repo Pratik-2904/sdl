@@ -1,0 +1,137 @@
+<?php
+// Database connection
+$host = "localhost";
+$user = "root";
+$password = "";
+$database = "toll_tax_db";
+
+$conn = new mysqli($host, $user, $password, $database);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Insert vehicle rates if not already present
+$conn->query("CREATE TABLE IF NOT EXISTS vehicle_rates (
+    vehicle_type VARCHAR(50) PRIMARY KEY,
+    rate DECIMAL(10,2) NOT NULL
+)");
+
+$rates = [
+    'Car' => 50.00,
+    'Bus' => 100.00,
+    'Truck' => 150.00,
+    'Bike' => 30.00
+];
+foreach ($rates as $type => $rate) {
+    $conn->query("INSERT IGNORE INTO vehicle_rates (vehicle_type, rate) VALUES ('$type', '$rate')");
+}
+
+// Create vehicles table if not exists
+$conn->query("CREATE TABLE IF NOT EXISTS vehicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    vehicle_number VARCHAR(20) NOT NULL,
+    vehicle_type VARCHAR(50) NOT NULL,
+    toll_amount DECIMAL(10,2) NOT NULL,
+    entry_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Toll Tax Management</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        h2 { color: #333; }
+        a { margin-right: 15px; text-decoration: none; color: #007bff; }
+        table { border-collapse: collapse; width: 100%; background: #fff; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        form { background: #fff; padding: 20px; width: 400px; margin-top: 20px; }
+        button { padding: 8px 16px; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+
+<h2>Toll Tax Management System</h2>
+<a href="?page=add">Add Vehicle Entry</a>
+<a href="?page=view">View Entries</a>
+<a href="?">Home</a>
+
+<?php
+$page = $_GET['page'] ?? '';
+
+if ($page == 'add') {
+    // Add Vehicle Entry Page
+    ?>
+    <form method="POST">
+        <label>Vehicle Number:</label><br>
+        <input type="text" name="vehicle_number" required><br><br>
+
+        <label>Vehicle Type:</label><br>
+        <select name="vehicle_type" required>
+            <?php
+            $result = $conn->query("SELECT * FROM vehicle_rates");
+            while ($row = $result->fetch_assoc()) {
+                echo "<option value='{$row['vehicle_type']}'>{$row['vehicle_type']} - ₹{$row['rate']}</option>";
+            }
+            ?>
+        </select><br><br>
+
+        <button type="submit" name="submit">Submit</button>
+    </form>
+
+    <?php
+    if (isset($_POST['submit'])) {
+        $vehicle_number = $_POST['vehicle_number'];
+        $vehicle_type = $_POST['vehicle_type'];
+
+        $rate_result = $conn->query("SELECT rate FROM vehicle_rates WHERE vehicle_type='$vehicle_type'");
+        $rate = $rate_result->fetch_assoc()['rate'];
+
+        $insert = $conn->query("INSERT INTO vehicles (vehicle_number, vehicle_type, toll_amount)
+                                VALUES ('$vehicle_number', '$vehicle_type', '$rate')");
+
+        if ($insert) {
+            echo "<p class='success'>Vehicle entry added successfully!</p>";
+        } else {
+            echo "Error: " . $conn->error;
+        }
+    }
+    ?>
+
+    <?php
+} elseif ($page == 'view') {
+    // View Entries Page
+    $entries = $conn->query("SELECT * FROM vehicles ORDER BY entry_time DESC");
+    ?>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Vehicle Number</th>
+            <th>Type</th>
+            <th>Amount (₹)</th>
+            <th>Entry Time</th>
+        </tr>
+        <?php
+        while ($row = $entries->fetch_assoc()) {
+            echo "<tr>
+                    <td>{$row['id']}</td>
+                    <td>{$row['vehicle_number']}</td>
+                    <td>{$row['vehicle_type']}</td>
+                    <td>{$row['toll_amount']}</td>
+                    <td>{$row['entry_time']}</td>
+                </tr>";
+        }
+        ?>
+    </table>
+
+    <?php
+} else {
+    echo "<p>Welcome to the Toll Tax Management System. Use the menu above to add vehicle entries or view existing records.</p>";
+}
+?>
+
+</body>
+</html>

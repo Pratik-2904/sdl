@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Date of Birth Form</title>
+</head>
+<body>
+
+  <h3>Enter Your Date of Birth</h3>
+
+  <form onsubmit="return validateDOB()">
+    <label for="dob">Date of Birth:</label><br>
+    <input type="date" id="dob" name="dob"><br>
+    <span id="dobError" style="color:red;"></span><br><br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    function validateDOB() {
+      const dobInput = document.getElementById("dob").value;
+
+      if (!dobInput) {
+        document.getElementById("dobError").textContent = "Please select your Date of Birth.";
+        return false;
+      }
+
+      const dob = new Date(dobInput);
+      const today = new Date();
+
+      if (dob >= today) {
+        document.getElementById("dobError").textContent = "DOB cannot be today or in the future.";
+        return false;
+      }
+
+      // Optional: Check if age is at least 18
+      const age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--; // adjust if birthday hasn't occurred yet this year
+      }
+
+      if (age < 18) {
+        document.getElementById("dobError").textContent = "You must be at least 18 years old.";
+        return false;
+      }
+
+      document.getElementById("dobError").textContent = "";
+      alert("DOB is valid: " + dobInput + " (Age: " + age + ")");
+      return true;
+    }
+  </script>
+
+</body>
+</html>
